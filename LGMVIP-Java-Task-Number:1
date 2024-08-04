@@ -1,0 +1,19 @@
+import java.util.Scanner;
+
+public class CurrencyConverter {
+    public static void main(String[] args) {
+        // Current conversion rate from USD to INR
+        double conversionRate = 83.77; // Example rate, you can update it to the current rate
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter amount in USD: ");
+        double usd = scanner.nextDouble();
+
+        double inr = usd * conversionRate;
+
+        System.out.printf("%.2f USD is equivalent to %.2f INR%n", usd, inr);
+
+        scanner.close();
+    }
+}
