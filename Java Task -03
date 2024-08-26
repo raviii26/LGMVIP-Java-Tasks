@@ -1,0 +1,115 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Stack;
+
+public class ScientificCalculator extends JFrame implements ActionListener {
+
+    private JTextField display;
+    private JPanel buttonPanel;
+    private final String[] BUTTONS = {
+        "7", "8", "9", "/", "sqrt", 
+        "4", "5", "6", "*", "pow",
+        "1", "2", "3", "-", "log",
+        "0", ".", "C", "+", "=",
+        "sin", "cos", "tan", "(", ")"
+    };
+    
+    private final Stack<String> expression = new Stack<>();
+
+    public ScientificCalculator() {
+        setTitle("Scientific Calculator");
+        setSize(400, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        display = new JTextField();
+        display.setFont(new Font("Arial", Font.PLAIN, 24));
+        display.setHorizontalAlignment(JTextField.RIGHT);
+        add(display, BorderLayout.NORTH);
+
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(5, 5, 5, 5));
+        add(buttonPanel, BorderLayout.CENTER);
+
+        // Create buttons and add them to the panel
+        for (String text : BUTTONS) {
+            JButton button = new JButton(text);
+            button.setFont(new Font("Arial", Font.PLAIN, 18));
+            button.addActionListener(this);
+            buttonPanel.add(button);
+        }
+
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        try {
+            switch (command) {
+                case "=":
+                    display.setText(evaluateExpression(display.getText()));
+                    break;
+                case "C":
+                    display.setText("");
+                    expression.clear();
+                    break;
+                case "sqrt":
+                    expression.push("sqrt(" + getDisplayText() + ")");
+                    updateDisplay(Math.sqrt(Double.parseDouble(getDisplayText())));
+                    break;
+                case "pow":
+                    expression.push("pow(" + getDisplayText() + ")");
+                    updateDisplay(Math.pow(Double.parseDouble(getDisplayText()), 2)); // Default to square
+                    break;
+                case "log":
+                    updateDisplay(Math.log10(Double.parseDouble(getDisplayText())));
+                    break;
+                case "sin":
+                    updateDisplay(Math.sin(Math.toRadians(Double.parseDouble(getDisplayText()))));
+                    break;
+                case "cos":
+                    updateDisplay(Math.cos(Math.toRadians(Double.parseDouble(getDisplayText()))));
+                    break;
+                case "tan":
+                    updateDisplay(Math.tan(Math.toRadians(Double.parseDouble(getDisplayText()))));
+                    break;
+                default:
+                    if (command.equals("(") || command.equals(")")) {
+                        expression.push(command);
+                    } else {
+                        expression.push(command);
+                    }
+                    updateDisplay(getDisplayText() + command);
+                    break;
+            }
+        } catch (Exception ex) {
+            display.setText("Error");
+        }
+    }
+
+    private String getDisplayText() {
+        return display.getText();
+    }
+
+    private void updateDisplay(String text) {
+        display.setText(text);
+    }
+
+    private String evaluateExpression(String expr) {
+        // For simplicity, using JavaScript engine for evaluation
+        // This can be replaced with a more robust expression parser if needed
+        try {
+            return new javax.script.ScriptEngineManager().getEngineByName("JavaScript").eval(expr).toString();
+        } catch (Exception e) {
+            return "Error";
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(ScientificCalculator::new);
+    }
+}
