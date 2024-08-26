@@ -1,0 +1,142 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import javax.swing.undo.*;
+
+public class SimpleTextEditor extends JFrame {
+
+    private JTextArea textArea;
+    private UndoManager undoManager;
+
+    public SimpleTextEditor() {
+        setTitle("Simple Text Editor");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        add(scrollPane, BorderLayout.CENTER);
+
+        undoManager = new UndoManager();
+        textArea.getDocument().addUndoableEditListener(undoManager);
+
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        // File menu
+        JMenu fileMenu = new JMenu("File");
+        menuBar.add(fileMenu);
+
+        JMenuItem newItem = new JMenuItem("New");
+        newItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textArea.setText("");
+            }
+        });
+        fileMenu.add(newItem);
+
+        JMenuItem openItem = new JMenuItem("Open");
+        openItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                        textArea.read(reader, null);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        fileMenu.add(openItem);
+
+        JMenuItem saveItem = new JMenuItem("Save");
+        saveItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showSaveDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                        textArea.write(writer);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
+        fileMenu.add(saveItem);
+
+        // Edit menu
+        JMenu editMenu = new JMenu("Edit");
+        menuBar.add(editMenu);
+
+        JMenuItem cutItem = new JMenuItem("Cut");
+        cutItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textArea.cut();
+            }
+        });
+        editMenu.add(cutItem);
+
+        JMenuItem copyItem = new JMenuItem("Copy");
+        copyItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textArea.copy();
+            }
+        });
+        editMenu.add(copyItem);
+
+        JMenuItem pasteItem = new JMenuItem("Paste");
+        pasteItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textArea.paste();
+            }
+        });
+        editMenu.add(pasteItem);
+
+        JMenuItem undoItem = new JMenuItem("Undo");
+        undoItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (undoManager.canUndo()) {
+                    undoManager.undo();
+                }
+            }
+        });
+        editMenu.add(undoItem);
+
+        JMenuItem redoItem = new JMenuItem("Redo");
+        redoItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (undoManager.canRedo()) {
+                    undoManager.redo();
+                }
+            }
+        });
+        editMenu.add(redoItem);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new SimpleTextEditor().setVisible(true);
+            }
+        });
+    }
+}
