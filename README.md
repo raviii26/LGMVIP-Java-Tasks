@@ -1,1 +1,1 @@
-# LGMVIP-Java-Tasks
+LGMVIP Java Projects
