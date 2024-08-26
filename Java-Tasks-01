@@ -89,7 +89,7 @@ public class CurrencyConverterApplet extends Applet {
 </web-app>
 
 
-#index.html
+# index.html
 
 <!DOCTYPE html>
 <html lang="en">
