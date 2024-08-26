@@ -1,0 +1,120 @@
+#currencyservlet.java
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+@WebServlet("/convert")
+public class CurrencyConverterServlet extends HttpServlet {
+    private static final double EXCHANGE_RATE = 83.0; // Example rate: 1 USD = 83 INR
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String amountStr = request.getParameter("amount");
+        double amount = Double.parseDouble(amountStr);
+        double convertedAmount = amount * EXCHANGE_RATE;
+
+        response.setContentType("application/json");
+        PrintWriter out = response.getWriter();
+        out.println("{\"convertedAmount\": " + convertedAmount + "}");
+    }
+}
+
+
+#currencyapplet.java
+
+import java.applet.Applet;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.swing.*;
+
+public class CurrencyConverterApplet extends Applet {
+    private TextField amountField;
+    private Button convertButton;
+    private Label resultLabel;
+
+    public void init() {
+        setLayout(new FlowLayout());
+
+        add(new Label("Amount in USD:"));
+        amountField = new TextField(10);
+        add(amountField);
+
+        convertButton = new Button("Convert");
+        add(convertButton);
+
+        resultLabel = new Label("Converted Amount: ");
+        add(resultLabel);
+
+        convertButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                convertCurrency();
+            }
+        });
+    }
+
+    private void convertCurrency() {
+        try {
+            String amount = amountField.getText();
+            URL url = new URL("http://localhost:8080/yourapp/convert");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDo
+#web.xml
+
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <servlet>
+        <servlet-name>CurrencyConverterServlet</servlet-name>
+        <servlet-class>CurrencyConverterServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CurrencyConverterServlet</servlet-name>
+        <url-pattern>/convert</url-pattern>
+    </servlet-mapping>
+</web-app>
+
+
+#index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Currency Converter</title>
+    <script>
+        function convertCurrency() {
+            var amount = document.getElementById('usdAmount').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'convert?amount=' + amount, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('result').innerText = 'Amount in INR: ' + response.inrAmount.toFixed(2);
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+    <h1>USD to INR Currency Converter</h1>
+    <input type="text" id="usdAmount" placeholder="Enter amount in USD">
+    <button onclick="convertCurrency()">Convert</button>
+    <p id="result"></p>
+</body>
+</html>
