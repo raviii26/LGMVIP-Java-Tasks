@@ -1,0 +1,95 @@
+#sql
+
+CREATE TABLE articles (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL
+);
+
+#sql command
+
+INSERT INTO articles (title, content) VALUES ('Java Programming', 'This is a detailed article about Java programming.');
+INSERT INTO articles (title, content) VALUES ('Servlets and JSP', 'This article explains how to use Servlets and JSP for web development.');
+INSERT INTO articles (title, content) VALUES ('Database Design', 'Learn how to design efficient database schemas.');
+
+# Servlet.java
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+@WebServlet("/search")
+public class SearchServlet extends HttpServlet {
+
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/yourdatabase";
+    private static final String JDBC_USER = "yourusername";
+    private static final String JDBC_PASSWORD = "yourpassword";
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String query = request.getParameter("query");
+        List<String> results = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)) {
+            String sql = "SELECT title FROM articles WHERE title LIKE ? OR content LIKE ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, "%" + query + "%");
+                statement.setString(2, "%" + query + "%");
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        results.add(resultSet.getString("title"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        request.setAttribute("results", results);
+        request.getRequestDispatcher("/search.jsp").forward(request, response);
+    }
+}
+
+
+#index.jsp
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Search Engine</title>
+</head>
+<body>
+    <h1>Search Engine</h1>
+    <form action="search" method="get">
+        <input type="text" name="query" placeholder="Enter search term" required>
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>
+
+
+#search.jsp
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Search Engine</title>
+</head>
+<body>
+    <h1>Search Engine</h1>
+    <form action="search" method="get">
+        <input type="text" name="query" placeholder="Enter search term" required>
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>
